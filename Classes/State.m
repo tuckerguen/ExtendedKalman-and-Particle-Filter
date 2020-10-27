@@ -20,6 +20,10 @@ classdef State
         function xtp1 = add(obj, s2)
             xtp1 = State(obj.x + s2.x, obj.y + s2.y, obj.theta + s2.theta);
         end
+        
+        function vec = get_vec(obj)
+            vec = [obj.x; obj.y; obj.theta];
+        end
     end
 end
 

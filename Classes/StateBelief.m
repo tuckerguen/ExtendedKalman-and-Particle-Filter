@@ -3,7 +3,7 @@ classdef StateBelief
     %   Detailed explanation goes here
     
     properties
-        mu          % x, y, theta mean of belief
+        mu StateMean        % x, y, theta mean of belief
         Cov(3,3)    % Covariance of belief
     end
     
@@ -13,6 +13,10 @@ classdef StateBelief
             %   Detailed explanation goes here
             obj.mu = mu;
             obj.Cov = Cov;
+        end
+        
+        function loc = get_loc(obj)
+            loc = [obj.mu.x; obj.mu.y; obj.mu.t];
         end
     end
 end

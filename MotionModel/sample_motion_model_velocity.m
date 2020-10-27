@@ -1,11 +1,10 @@
 % ut = [vt, wt], xt_1 = [x_t-1 y_t-1 w_t-1], a = [a1,...,a6]
-function xti = sample_motion_model_velocity(ut, xt_1)
+function xti = sample_motion_model_velocity(ut, xt_1, a)
     % Collect useful values
     dt = 1;
     vt = ut.v;
     wt = ut.w;
     theta = xt_1.theta;
-    a = ut.alphas;
     
     % Adjust vt and wt for noise given alpha
     vh = vt + sample_normal(0, a(1)*abs(vt)+a(2)*abs(wt), 1);

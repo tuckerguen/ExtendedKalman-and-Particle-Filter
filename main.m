@@ -29,8 +29,8 @@ n = 8;
 
 % List of commands
 all_ut = [ Command(1, 0),       Command(1, 0),       Command(1, 0), ...
-       Command(pi/2, pi/2), Command(pi/2, pi/2), ...
-       Command(1, 0),       Command(1, 0),       Command(1, 0)];
+           Command(pi/2, pi/2), Command(pi/2, pi/2), ...
+           Command(1, 0),       Command(1, 0),       Command(1, 0)];
 
 % Motion uncertanties
 a = [0.0001; 0.0001; 0.01; 0.0001; 0.0001; 0.0001];
@@ -44,12 +44,64 @@ all_zt = [ Measurement(2.276, 5.249, 2), Measurement(4.321, 5.834, 3), ...
 % Measurement Uncertanties
 sig_r = 0.1;
 sig_phi = 0.09;
-   
-%% Extended Kalman Filter
+
+
+%% Run EKF over all timesteps
+% Init storage variables
+beliefs = [bel_0];
+truths = [x0];
+xt_1 = x0;
 bel = bel_0;
+
+% Loop over all timesteps
 for t = 1:n
+    % Gather command and measurement
     ut = all_ut(t);
     zt = all_zt(t);
+    % Run EKf
     bel = EKF(bel, ut, a, zt, sig_r, sig_phi, m);
+    beliefs = [beliefs; bel];
+    % Run motion model w/ no noise to get truth
+    xt = sample_motion_model_velocity(ut, xt_1, zeros(1,6));
+    xt_1 = xt;
+    truths = [truths; xt]; 
 end
-    
+
+%% Collect state means and covariances
+covs = zeros(3, 3, n+1);
+locs = zeros(n+1, 3);
+t_vecs = zeros(n+1, 3);
+for i = 1:n+1
+    bel = beliefs(i);
+    loc = get_loc(bel);
+    locs(i,:) = loc';
+    cov = bel.Cov;
+    covs(:,:,i) = cov;
+    t_vecs(i,:) = get_vec(truths(i));
+end
+
+%% Plot EKF run
+close all;
+locxs = locs(:,1);
+locys = locs(:,2);
+
+truexs = t_vecs(:,1);
+trueys = t_vecs(:,2);
+
+plot(locxs, locys);
+hold on;
+plot(truexs, trueys);
+
+
+
+
+
+
+
+
+
+
+
+
+
+

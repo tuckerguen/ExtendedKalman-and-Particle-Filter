@@ -19,46 +19,65 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
     th = bel_t1.mu.t;
     % theta' = thetat + w * dt
     thp = th + ut.w * dt;
-    % Account for vh/wh undefined
-    if ut.w == 0
-        ut.w = sqrt(realmin);
-    end
-    % v / w
-    vdw = ut.v/ut.w;
     
     % Prediction Step
     % ----------------------------------------------
-    % Compute G, approximation of true robot motion
-    G = [
-        1 0 (-(vdw) * cos(th)) + (vdw * cos(thp));
-        1 0 (-(vdw) * sin(th)) + (vdw * sin(thp));
-        0 0                     1                ;
-    ];
-
-    % Transformation V, mapping motion noise to state space 
-    v11 = (-sin(th) + sin(thp)) / ut.w;
-    v12 = ((ut.v * (sin(th) - sin(thp))) / (ut.w ^ 2)) + ...
+    
+    % Account for no angular velocity
+    if ut.w ~= 0
+        % v / w
+        vdw = ut.v/ut.w;
+        % Compute Jacobian G of motion model
+        G = [
+            1 0 (-(vdw) * cos(th)) + (vdw * cos(thp));
+            1 0 (-(vdw) * sin(th)) + (vdw * sin(thp));
+            0 0                     1                ;
+        ];
+    
+        % Jacobian V, control space to state space approximation
+        v11 = (-sin(th) + sin(thp)) / ut.w;
+        v12 = ((ut.v * (sin(th) - sin(thp))) / (ut.w ^ 2)) + ...
           ((ut.v * cos(thp) * dt) / ut.w);
-    v21 = (cos(th) - cos(thp)) / ut.w;
-    v22 = (-(ut.v * (cos(th) - cos(thp))) / (ut.w ^ 2)) + ...
-          ((ut.v * sin(thp) * dt) / ut.w);
-    V = [
-        v11 v12;
-        v21 v22;
-         0   dt;
-    ];
+        v21 = (cos(th) - cos(thp)) / ut.w;
+        v22 = (-(ut.v * (cos(th) - cos(thp))) / (ut.w ^ 2)) + ...
+              ((ut.v * sin(thp) * dt) / ut.w);
+        V = [
+            v11 v12;
+            v21 v22;
+             0   dt;
+        ];
+    
+        % Values to add to mu
+        mu_adj = [
+            -vdw * sin(th) + vdw * sin(thp);
+             vdw * cos(th) - vdw * cos(thp);
+                      ut.w * dt 
+        ];
+    else
+        % Jacobian motion model w/ lim_{w->0}
+        G = [
+            1 0 0;
+            1 0 0;
+            0 0 1;
+        ];
+        % Jacobian w.r.t control
+        V = [
+            0 0;
+            0 0;
+            0 dt;
+        ];
+    
+        mu_adj = [
+            ut.v * cos(th)
+            ut.w * sin(th)
+                  0
+        ];
+    end
 
     % Covariance of noise in control space
     M = [
         (a(1) * ut.v^2 + a(2) * ut.w^2)                0;
                        0                (a(3) * ut.v^2 + a(3) * ut.w^2);
-    ];
-
-    % Term to update mu with
-    mu_adj = [
-        -vdw * sin(th) + vdw * sin(thp);
-         vdw * cos(th) - vdw * cos(thp);
-                  ut.w * dt
     ];
 
     % mu-bar and covariance-bar, intermediate mu and cov values after
@@ -79,32 +98,38 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
     
     % Loop over all observed landmarks
     for i = 1:length(zt_lis)
+        % Get measurement
         zt = zt_lis(i);
-        
+        % Get relevant values from landmark
         j = zt.c;
         mjx = m.landmarks(j).mx;
         mjy = m.landmarks(j).my;
         
+        % rt
         q = (mjx - mu_b.x)^2 + (mjy - mu_b.y)^2;
-        
+        % Measurement given correspondence
         z_h = [ 
                             sqrt(q); 
-            atan2(mjy - mu_b.y, mjx - mu_b.x) - mu_b.t;
+            atan2(mjy - mu_b.y, mjx - mu_b.x) + mu_b.t;
                                0;
         ];
-    
+        % Jacobian of measurement w.r.t location
         H = [
             -(mjx - mu_b.x) / sqrt(q), -(mjy - mu_b.y) / sqrt(q),  0;
              (mjy - mu_b.y) / q      , -(mjx - mu_b.x) / q      , -1;
                             0                           0          0;
         ];
         
-        S = H * Cov_b * H' + Q;
+        S = H * Cov_b * H' + Q;   
+        if cond(S) == inf 
+           K = (Cov_b + Q) * H';
+        else
+           K = Cov_b * H' / (S);
+        end
+        
         % Kalman Gain
-        K = Cov_b * H' / S;
-        
+         
         zt_vec = get_measurement_vec(zt);
-        
         
         v =  K * (zt_vec - z_h);
         
