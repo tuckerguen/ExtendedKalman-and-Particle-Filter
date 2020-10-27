@@ -115,24 +115,24 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
         ];
         % Jacobian of measurement w.r.t location
         H = [
-            -(mjx - mu_b.x) / sqrt(q), -(mjy - mu_b.y) / sqrt(q),  0;
-             (mjy - mu_b.y) / q      , -(mjx - mu_b.x) / q      , -1;
-                            0                           0          0;
+            -(mjx - mu_b.x) / sqrt(q), -(mjy - mu_b.y) / sqrt(q) 0;
+             (mjy - mu_b.y) / q      , -(mjx - mu_b.x) / q       -1;
+                            0               0 0;
         ];
         
         S = H * Cov_b * H' + Q;   
-        if cond(S) == inf 
-           K = (Cov_b + Q) * H';
-        else
-           K = Cov_b * H' / (S);
-        end
-        
+        S = S(1:2,1:2);
         % Kalman Gain
+        K = Cov_b(1:2,1:2) * H(1:2,1:2)' / (S);
          
+        % Get true measurement
         zt_vec = get_measurement_vec(zt);
         
+        % Extend kalman gain for multiplication
+        K(3,3) = 0;
         v =  K * (zt_vec - z_h);
         
+        % Adjust mu
         mu_b = add_vector(mu_b, v);
         Cov_b = (eye(3) - K * H) * Cov_b;
     end
