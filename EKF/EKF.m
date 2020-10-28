@@ -104,6 +104,7 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
         j = zt.c;
         mjx = m.landmarks(j).mx;
         mjy = m.landmarks(j).my;
+        mjs = m.landmarks(j).ms;
         
         % rt
         q = (mjx - mu_b.x)^2 + (mjy - mu_b.y)^2;
@@ -111,7 +112,7 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
         z_h = [ 
                             sqrt(q); 
             atan2(mjy - mu_b.y, mjx - mu_b.x) + mu_b.t;
-                               0;
+                               mjs;
         ];
         % Jacobian of measurement w.r.t location
         H = [

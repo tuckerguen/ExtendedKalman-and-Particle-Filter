@@ -4,12 +4,12 @@ addpath(p);
 
 %% Problem Configuration
 % Landmarks
-l1 = Landmark(0, 0);
-l2 = Landmark(4, 0);
-l3 = Landmark(8, 0);
-l4 = Landmark(8, 6);
-l5 = Landmark(4, 6);
-l6 = Landmark(0, 6);
+l1 = Landmark(0, 0, 1);
+l2 = Landmark(4, 0, 2);
+l3 = Landmark(8, 0, 3);
+l4 = Landmark(8, 6, 4);
+l5 = Landmark(4, 6, 5);
+l6 = Landmark(0, 6, 6);
 IDs = [1, 2, 3, 4, 5, 6];
 landmarks = {l1, l2, l3, l4, l5, l6};
 
@@ -48,23 +48,23 @@ sig_phi = 0.09;
 
 %% Run EKF over all timesteps
 % Init storage variables
-beliefs = [bel_0];
-truths = [x0];
+beliefs(1:9) = bel_0;
+truths(9) = x0;
 xt_1 = x0;
 bel = bel_0;
 
 % Loop over all timesteps
 for t = 1:n
-    % Gather command and measurement
+    % Get command and measurement
     ut = all_ut(t);
     zt = all_zt(t);
     % Run EKf
     bel = EKF(bel, ut, a, zt, sig_r, sig_phi, m);
-    beliefs = [beliefs; bel];
+    beliefs(t+1) = bel;
     % Run motion model w/ no noise to get truth
     xt = sample_motion_model_velocity(ut, xt_1, zeros(1,6));
     xt_1 = xt;
-    truths = [truths; xt]; 
+    truths(t+1) = xt; 
 end
 
 %% Collect state means and covariances
@@ -91,6 +91,69 @@ trueys = t_vecs(:,2);
 plot(locxs, locys);
 hold on;
 plot(truexs, trueys);
+for i=1:n+1
+    
+end
+
+%% Particle Filter Initialization
+M = 1000;
+% Generate set of random particles
+X0(1:M, 1) = Particle(State(0,0,0), 0);
+xs = rand_range(0, 8, M);
+ys = rand_range(0, 8, M);
+thetas = rand_range(0, 2*pi, M);
+for i = 1:M
+    rand_state = State(xs(i), ys(i), thetas(i));
+    X0(i) = Particle(rand_state, 1/M);
+end
+
+%% Run particle filter 
+% Initial particle set/true pose
+Xt = X0;
+xt_1 = x0;
+% Array to store true poses
+truths(1:9) = x0;
+% Array to store intermediate particle sets
+particle_sets = [Xt'];
+% Loop over all timesteps
+for t = 1:n
+    % Get command and measurement
+    ut = all_ut(t);
+    zt = all_zt(t);
+    % Run EKf
+    Xt = particle_filter(Xt, M, ut, a, zt, sig_r, sig_phi, m);
+    particle_sets = [particle_sets; Xt'];
+    % Run motion model w/ no noise to get truth
+    xt = sample_motion_model_velocity(ut, xt_1, zeros(1,6));
+    xt_1 = xt;
+    truths(t+1) = xt; 
+end
+
+%% Plot particles for each timestep
+pxs = zeros(1,M);
+pys = zeros(1,M);
+plot(truexs, trueys);
+hold on;
+for j=1:9
+    particles = particle_sets(j,:);
+    for i=1:M
+        p = particles(i);
+        pxs(i) = p.x.x;
+        pys(i) = p.x.y;
+    end
+    scatter(pxs, pys);
+end
+
+
+
+
+
+
+
+
+
+
+
 
 
 
