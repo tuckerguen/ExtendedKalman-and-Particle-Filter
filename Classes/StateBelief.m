@@ -3,7 +3,7 @@ classdef StateBelief
     %   Detailed explanation goes here
     
     properties
-        mu StateMean        % x, y, theta mean of belief
+        mu State        % x, y, theta mean of belief
         Cov(3,3)    % Covariance of belief
     end
     

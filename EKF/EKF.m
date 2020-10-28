@@ -12,7 +12,7 @@
 %   zt      = features, list of measurements of landmarks at time t
 %   m       = Map robot is operating in
 
-function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
+function [true_state, belief] = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
     % Standardized delta t = 1s
     dt = 1;
     % Mean of belief of theta
@@ -82,19 +82,26 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
 
     % mu-bar and covariance-bar, intermediate mu and cov values after
     % prediciton step
+    
+    true_state = sample_motion_model_velocity(ut, bel_t1.mu, a);
+%     mu_b = true_state;    
     mu_b = add_vector(bel_t1.mu, mu_adj);
+
     Cov_b = G * bel_t1.Cov * G' + V * M * V';    
     
     % Correction Step
-    % ----------------------------------------------
-    % Loop over all observed landmarks (For this assignment is only one)
-    
+    % ----------------------------------------------    
     % Covariance of measurement noise
+    % Variance in signature reading is ideally 0 in this case
+    % but to avoid having S be a non-invertible singular matrix,
+    % we pick the value of sigma for signature error to be the smallest
+    % floating pt value.
+    % This produces numerically very close results to sigma = 0
     Q = [
         sig_r^2    0      0;
            0    sig_phi^2 0;
-           0       0      0; 
-    ];
+           0       0      realmin; 
+    ]
     
     % Loop over all observed landmarks
     for i = 1:length(zt_lis)
@@ -111,7 +118,7 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
         % Measurement given correspondence
         z_h = [ 
                             sqrt(q); 
-            atan2(mjy - mu_b.y, mjx - mu_b.x) + mu_b.t;
+            atan2(mjy - mu_b.y, mjx - mu_b.x) - mu_b.t;
                                mjs;
         ];
         % Jacobian of measurement w.r.t location
@@ -121,17 +128,21 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
                             0               0 0;
         ];
         
-        S = H * Cov_b * H' + Q;   
-        S = S(1:2,1:2);
+        S = H * Cov_b * H' + Q;
         % Kalman Gain
-        K = Cov_b(1:2,1:2) * H(1:2,1:2)' / (S);
-         
+        K = Cov_b * H' / S;
         % Get true measurement
         zt_vec = get_measurement_vec(zt);
         
         % Extend kalman gain for multiplication
         K(3,3) = 0;
-        v =  K * (zt_vec - z_h);
+        z_err = (zt_vec - z_h);
+        % Properly compute rotational error
+        e1 = zt_vec(2) + 2*pi - z_h(2);
+        e2 = zt_vec(2) - 2*pi - z_h(2);
+        z_err(2) = min([z_err(2), e1, e2]);
+        
+        v =  K * z_err;
         
         % Adjust mu
         mu_b = add_vector(mu_b, v);

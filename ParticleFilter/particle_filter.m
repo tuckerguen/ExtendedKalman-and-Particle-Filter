@@ -1,4 +1,5 @@
-function Xt = particle_filter(Xt_1, num_particles, ut, a, zt, sig_r, sig_phi, map)
+function [Xt_b, Xt] = particle_filter(Xt_1, ut, a, zt, sig_r, sig_phi, map)
+    num_particles = length(Xt_1);
     Xt_b(1:num_particles, 1) = Particle(State(0,0,0), 0);
     sum_of_w = 0;
     

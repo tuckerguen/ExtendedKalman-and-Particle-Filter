@@ -4,7 +4,7 @@ function xti = sample_motion_model_velocity(ut, xt_1, a)
     dt = 1;
     vt = ut.v;
     wt = ut.w;
-    theta = xt_1.theta;
+    theta = xt_1.t;
     
     % Adjust vt and wt for noise given alpha
     vh = vt + sample_normal(0, a(1)*abs(vt)+a(2)*abs(wt), 1);
