@@ -8,7 +8,7 @@ function prob = landmark_model(zt, xt, sig_r, sig_phi, map)
     % Distance
     rh = sqrt((mjx-xt.x)^2+(mjy-xt.y)^2);
     % Direction (relative to heading)
-    phih = 2*pi + atan2(mjy-xt.y, mjx-xt.x) - xt.theta;
+    phih = 2*pi + atan2(mjy-xt.y, mjx-xt.x) - xt.t;
     % Compute probability
     p1 = normpdf(zt.r - rh,   0, sig_r);
     p2 = normpdf(zt.phi - phih, 0, sig_phi);   

@@ -44,7 +44,7 @@ plot(true_noise_xs, true_noise_ys, 'k');
 plot(locxs, locys, 'c');
 
 for i=i:n+1
-   error_ellipse(covs(:,:,i), get_vec(beliefs(i).mu)) 
+    error_ellipse(covs(:,:,i),get_vec(beliefs(i).mu));
 end
 
 legend('true pose no noise', 'true pose w/ noise', 'estimated pose');

@@ -101,7 +101,7 @@ function [true_state, belief] = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
         sig_r^2    0      0;
            0    sig_phi^2 0;
            0       0      realmin; 
-    ]
+    ];
     
     % Loop over all observed landmarks
     for i = 1:length(zt_lis)

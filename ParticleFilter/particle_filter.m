@@ -1,8 +1,10 @@
-function [Xt_b, Xt] = particle_filter(Xt_1, ut, a, zt, sig_r, sig_phi, map)
+function [Xt_b, Xt, true_state] = particle_filter(Xt_1, true_xt_1, ut, a, zt, sig_r, sig_phi, map)
     num_particles = length(Xt_1);
     Xt_b(1:num_particles, 1) = Particle(State(0,0,0), 0);
     sum_of_w = 0;
     
+    true_state = sample_motion_model_velocity(ut, true_xt_1, a);
+
     for i=1:num_particles
         pt_1 = Xt_1(i);
         % Sample new state using velocity model
