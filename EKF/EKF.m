@@ -12,7 +12,7 @@
 %   zt      = features, list of measurements of landmarks at time t
 %   m       = Map robot is operating in
 
-function [true_state, belief] = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
+function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
     % Standardized delta t = 1s
     dt = 1;
     % Mean of belief of theta
@@ -82,9 +82,6 @@ function [true_state, belief] = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
 
     % mu-bar and covariance-bar, intermediate mu and cov values after
     % prediciton step
-    
-    true_state = sample_motion_model_velocity(ut, bel_t1.mu, a);
-%     mu_b = true_state;    
     mu_b = add_vector(bel_t1.mu, mu_adj);
 
     Cov_b = G * bel_t1.Cov * G' + V * M * V';    

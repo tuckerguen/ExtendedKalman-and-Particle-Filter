@@ -16,8 +16,7 @@ end
 % Initial particle set/true pose
 Xt = X0;
 xt_1 = x0;
-% Array to store true poses
-truths(1:9) = x0;
+
 % Array to store intermediate particle sets
 pre_update_cov = [Xt'];
 post_update_cov = [Xt'];
@@ -27,20 +26,10 @@ for t = 1:n
     ut = all_ut(t);
     zt = all_zt(t);
     % Run EKf
-    [Xt_b, Xt, true_state] = particle_filter(Xt, xt_1, ut, a, zt, sig_r, sig_phi, m);
+    [Xt_b, Xt] = particle_filter(Xt, ut, a, zt, sig_r, sig_phi, m);
     pre_update_cov = [pre_update_cov; Xt_b';];
     post_update_cov = [post_update_cov; Xt';];
-    truths(t+1) = true_state;
-    xt_1 = true_state;
 end
-
-%% Collect true state values
-tvec = zeros(n+1, 2);
-for i = 1:n+1
-    tvec(i, :) = [truths(i).x; truths(i).y];
-end
-true_noise_xs = tvec(:,1);
-true_noise_ys = tvec(:,2);
 %% Plot particles for each timestep
 pre_pxs = zeros(1,M);
 pre_pys = zeros(1,M);
@@ -48,9 +37,8 @@ pre_pys = zeros(1,M);
 post_pxs = zeros(1,M);
 post_pys = zeros(1,M);
 
-scatter(true_xs, true_ys, 'm', 'filled');
+plot(true_xs, true_ys, 'm');
 hold on;
-plot(true_noise_xs, true_noise_ys, 'k');
 
 for j=1:9
     pre_update_particles = pre_update_cov(j,:);
@@ -67,3 +55,5 @@ for j=1:9
     scatter(pre_pxs, pre_pys, 'k');
     scatter(post_pxs, post_pys, 'c');
 end
+
+legend('true, noiseless pose', 'pre-update particles', 'post-update particles');
