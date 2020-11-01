@@ -22,7 +22,7 @@ x0 = State(2, 2, 0);
 
 % Initial State as a belief
 mu_0 = State(2, 2, 0);
-Cov_0 = ones(3, 3, 'double');
+Cov_0 = eye(3,3) * 0.5;
 bel_0 = StateBelief(mu_0, Cov_0);
 
 % Number of time steps

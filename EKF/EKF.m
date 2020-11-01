@@ -12,7 +12,7 @@
 %   zt      = features, list of measurements of landmarks at time t
 %   m       = Map robot is operating in
 
-function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
+function [pre_bel, belief] = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
     % Standardized delta t = 1s
     dt = 1;
     % Mean of belief of theta
@@ -83,9 +83,9 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
     % mu-bar and covariance-bar, intermediate mu and cov values after
     % prediciton step
     mu_b = add_vector(bel_t1.mu, mu_adj);
+    Cov_b = G * bel_t1.Cov * G' + V * M * V';  
+    pre_bel = StateBelief(mu_b, Cov_b);
 
-    Cov_b = G * bel_t1.Cov * G' + V * M * V';    
-    
     % Correction Step
     % ----------------------------------------------    
     % Covariance of measurement noise
@@ -127,12 +127,12 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
         
         S = H * Cov_b * H' + Q;
         % Kalman Gain
-        K = Cov_b * H' / S;
+        K = Cov_b * (H' / S);
         % Get true measurement
         zt_vec = get_measurement_vec(zt);
         
         % Extend kalman gain for multiplication
-        K(3,3) = 0;
+%         K(3,3) = 0;
         z_err = (zt_vec - z_h);
         % Properly compute rotational error
         e1 = zt_vec(2) + 2*pi - z_h(2);
@@ -144,6 +144,7 @@ function belief = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
         % Adjust mu
         mu_b = add_vector(mu_b, v);
         Cov_b = (eye(3) - K * H) * Cov_b;
+        % Account for small negatives as a result of realmin
     end
     
     belief = StateBelief(mu_b, Cov_b);

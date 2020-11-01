@@ -58,7 +58,7 @@ function h = plot_gaussian_ellipsoid(m, C, sdwidth, npts, axh)
 if ~exist('sdwidth', 'var'), sdwidth = 1; end
 if ~exist('npts', 'var'), npts = []; end
 if ~exist('axh', 'var'), axh = gca; end
-if numel(m) ~= length(m), 
+if numel(m) ~= length(m) 
     error('M must be a vector'); 
 end
 if ~( all(numel(m) == size(C)) )
@@ -74,7 +74,7 @@ switch numel(m)
    otherwise
       error('Unsupported dimensionality');
 end
-if nargout==0,
+if nargout==0
     clear h;
 end
 %-----------------------------
@@ -85,6 +85,8 @@ tt=linspace(0,2*pi,npts)';
 x = cos(tt); y=sin(tt);
 ap = [x(:) y(:)]';
 [v,d]=eig(C); 
+d = abs(d);
+v = abs(v);
 d = sdwidth * sqrt(d); % convert variance to sdwidth*sd
 bp = (v*d*ap) + repmat(means, 1, size(ap,2)); 
 h = plot(bp(1,:), bp(2,:), '-', 'parent', axh);
@@ -94,6 +96,8 @@ if isempty(npts), npts=20; end
 [x,y,z] = sphere(npts);
 ap = [x(:) y(:) z(:)]';
 [v,d]=eig(C); 
+d = abs(d);
+v = abs(v);
 if any(d(:) < 0)
    fprintf('warning: negative eigenvalues\n');
    d = max(d,0);

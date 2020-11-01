@@ -1,18 +1,19 @@
-%% Setup problem/workspace configuration
+% Setup problem/workspace configuration
 config_ws();
-%% Particle Filter Initialization
+
+% Particle Filter Initialization
 M = 200;
 % Generate set of random particles
 X0(1:M, 1) = Particle(State(0,0,0), 0);
 xs = rand_range(0, 8, M);
-ys = rand_range(0, 8, M);
+ys = rand_range(0, 6, M);
 thetas = rand_range(0, 2*pi, M);
 for i = 1:M
     rand_state = State(xs(i), ys(i), thetas(i));
-    X0(i) = Particle(rand_state, 1/M);
+    X0(i) = Particle(rand_state, 1/M); % Uniform weights
 end
 
-%% Run particle filter 
+%Run particle filter 
 % Initial particle set/true pose
 Xt = X0;
 xt_1 = x0;
@@ -30,14 +31,18 @@ for t = 1:n
     pre_update_cov = [pre_update_cov; Xt_b';];
     post_update_cov = [post_update_cov; Xt';];
 end
-%% Plot particles for each timestep
+
+%Plot particles for each timestep
+figure('name', 'PF Plot');
+pt_size = 3;
+
 pre_pxs = zeros(1,M);
 pre_pys = zeros(1,M);
 
 post_pxs = zeros(1,M);
 post_pys = zeros(1,M);
 
-plot(true_xs, true_ys, 'm');
+plot(true_xs, true_ys, '--r');
 hold on;
 
 for j=1:9
@@ -52,8 +57,8 @@ for j=1:9
         post_pxs(i) = post_p.x.x;
         post_pys(i) = post_p.x.y;
     end
-    scatter(pre_pxs, pre_pys, 'k');
-    scatter(post_pxs, post_pys, 'c');
+    scatter(pre_pxs, pre_pys, pt_size, 'k', 'filled');
+    scatter(post_pxs, post_pys, pt_size, 'c', 'filled');
 end
 
 legend('true, noiseless pose', 'pre-update particles', 'post-update particles');
