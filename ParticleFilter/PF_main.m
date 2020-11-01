@@ -26,7 +26,7 @@ for t = 1:n
     % Get command and measurement
     ut = all_ut(t);
     zt = all_zt(t);
-    % Run EKf
+    % Run particle filter
     [Xt_b, Xt] = particle_filter(Xt, ut, a, zt, sig_r, sig_phi, m);
     pre_update_cov = [pre_update_cov; Xt_b';];
     post_update_cov = [post_update_cov; Xt';];
@@ -34,7 +34,7 @@ end
 
 %Plot particles for each timestep
 figure('name', 'PF Plot');
-pt_size = 3;
+pt_size = 5;
 
 pre_pxs = zeros(1,M);
 pre_pys = zeros(1,M);
