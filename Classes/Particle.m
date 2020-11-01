@@ -1,6 +1,5 @@
 classdef Particle
-    %PARTICLE Summary of this class goes here
-    %   Detailed explanation goes here
+    %PARTICLE A state hypothesis with a weight for particle filter
     
     properties
         x State % State hypothesis of this particle

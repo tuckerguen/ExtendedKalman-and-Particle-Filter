@@ -1,3 +1,20 @@
+% The Particle Filter Localization Algorithm
+%   for landmark model with known correspondences.
+%   Returns a set of particles modeling the posterior distribution
+%   of the robot state given a set of motion commands and measurements
+%   Given: A sensor measurement realtive to a landmark, 
+%   the motion command given before that measurement,
+%   and the set of particles generated during the previous
+%   timestep.
+% Parameters:
+%   Xt_1    = particle set at time t-1
+%   ut      = Command at time t
+%   a       = motion uncertainty parameters 
+%   zt      = features, list of measurements of landmarks at time t
+%   sig_r   = stddev of distance to landmark measurements
+%   sig_phi = stddev of heading to landmark measurements
+%   m       = Map robot is operating in
+
 function [Xt_b, Xt] = particle_filter(Xt_1, ut, a, zt, sig_r, sig_phi, map)
     num_particles = length(Xt_1);
     Xt_b(1:num_particles, 1) = Particle(State(0,0,0), 0);

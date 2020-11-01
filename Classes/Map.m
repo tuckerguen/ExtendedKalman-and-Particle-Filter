@@ -1,9 +1,9 @@
 classdef Map
-    %MAP Summary of this class goes here
-    %   Detailed explanation goes here
+    %MAP A map of the object/landmarks in the state space
+    %   Stores a map of Landmarks with corresponding ID's
     
     properties
-        landmarks containers.Map % List of landmarks
+        landmarks containers.Map % Map of ID's to landmarks
     end
     
     methods

@@ -1,11 +1,10 @@
 classdef State
-    %STATE Summary of this class goes here
-    %   Detailed explanation goes here
+    %STATE Represents a planar robot state
     
     properties
-        x
-        y
-        t
+        x   % x position
+        y   % y position
+        t   % heading measured from +x axis counterclockwise
     end
     
     methods

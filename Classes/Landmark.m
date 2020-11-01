@@ -1,6 +1,6 @@
 classdef Landmark
-    %LANDMARK Summary of this class goes here
-    %   Detailed explanation goes here
+    %LANDMARK Represents a landmark on the map
+    %   Has x and y location, and ms signature
     
     properties
         mx        % Map location x

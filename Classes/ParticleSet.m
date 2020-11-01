@@ -1,6 +1,5 @@
 classdef ParticleSet
-    %PARTICLESET Summary of this class goes here
-    %   Detailed explanation goes here
+    %PARTICLESET List of Particles for particle filter
     
     properties
         all  % Vector of Particle objects

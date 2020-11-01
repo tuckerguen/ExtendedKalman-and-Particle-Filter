@@ -1,9 +1,10 @@
 classdef StateBelief
-    %StateBelief Summary of this class goes here
-    %   Detailed explanation goes here
+    %StateBelief Represents a gaussian posterior belief about the 
+    %   current robot state, given by a mean state
+    %   and covariance matrix
     
     properties
-        mu State        % x, y, theta mean of belief
+        mu State    % x, y, theta mean of belief
         Cov(3,3)    % Covariance of belief
     end
     

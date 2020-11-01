@@ -9,7 +9,10 @@
 % Parameters:
 %   bel_t1  = StateBelief at time t-1
 %   ut      = Command at time t
+%   a       = motion uncertainty parameters 
 %   zt      = features, list of measurements of landmarks at time t
+%   sig_r   = stddev of distance to landmark measurements
+%   sig_phi = stddev of heading to landmark measurements
 %   m       = Map robot is operating in
 
 function [pre_bel, belief] = EKF(bel_t1, ut, a, zt_lis, sig_r, sig_phi, m)
